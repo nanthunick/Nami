@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Banknote } from "lucide-react";
+import { Banknote, LogOut } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
 import { TransactionLogger } from "@/components/TransactionLogger";
 import { SummaryCards } from "@/components/SummaryCards";
 import { TransactionsTable } from "@/components/TransactionsTable";
@@ -11,10 +13,20 @@ import { MonthSelector } from "@/components/MonthSelector";
 export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { user, signOut, loading } = useAuth();
 
   const handleTransactionAdded = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,10 +55,25 @@ export default function Home() {
                 Personal Finance Dashboard
               </motion.p>
             </div>
-            <MonthSelector
-              selectedMonth={selectedMonth}
-              onMonthChange={setSelectedMonth}
-            />
+            
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground hidden md:block">
+                {user?.email}
+              </div>
+              <MonthSelector
+                selectedMonth={selectedMonth}
+                onMonthChange={setSelectedMonth}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut()}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>

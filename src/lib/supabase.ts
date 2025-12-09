@@ -23,5 +23,9 @@ export type Transaction = {
   description: string;
   date: string;
   category_id: string;
+  user_id: string;
+  amount_encrypted?: string;
+  description_encrypted?: string;
+  is_encrypted?: boolean;
 };
 

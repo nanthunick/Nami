@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase, type Category } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +55,7 @@ export function ManageCategoriesDialog({
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { user } = useAuth();
   
   // New category form
   const [newCategoryName, setNewCategoryName] = useState("");
@@ -130,6 +132,11 @@ export function ManageCategoriesDialog({
       return;
     }
 
+    if (!user) {
+      alert("You must be logged in to add categories");
+      return;
+    }
+
     setIsAdding(true);
 
     const { error } = await supabase.from("categories").insert([
@@ -138,6 +145,7 @@ export function ManageCategoriesDialog({
         type: newCategoryType,
         color: getRandomColor(),
         icon: "Circle", // Default icon
+        user_id: user.id,
       },
     ]);
 

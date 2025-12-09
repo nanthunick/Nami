@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, Plus, Settings } from "lucide-react";
 import { format } from "date-fns";
 import { supabase, type Category } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
+import { encrypt } from "@/lib/encryption";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,6 +36,7 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [manageCategoriesOpen, setManageCategoriesOpen] = useState(false);
+  const { user } = useAuth();
 
   // Fetch categories function
   const fetchCategories = async () => {
@@ -61,29 +64,48 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
       return;
     }
 
+    if (!user) {
+      alert("You must be logged in to add transactions");
+      return;
+    }
+
     setIsLoading(true);
 
-    const { error } = await supabase.from("transactions").insert([
-      {
-        date: format(date, "yyyy-MM-dd"),
-        category_id: categoryId,
-        description: description || null,
-        amount: parseFloat(amount),
-      },
-    ]);
+    try {
+      // Encrypt sensitive data before storing
+      const amountValue = parseFloat(amount);
+      const amountEncrypted = encrypt(amountValue, user.id);
+      const descriptionEncrypted = encrypt(description || '', user.id);
 
-    if (error) {
-      console.error("Error adding transaction:", error);
-      alert("Failed to add transaction");
-    } else {
-      // Reset form
-      setDescription("");
-      setAmount("");
-      setCategoryId("");
-      setDate(new Date());
-      
-      // Trigger refresh callback
-      onTransactionAdded?.();
+      const { error } = await supabase.from("transactions").insert([
+        {
+          date: format(date, "yyyy-MM-dd"),
+          category_id: categoryId,
+          description: description || null, // Keep for backward compatibility
+          amount: amountValue, // Keep for backward compatibility
+          description_encrypted: descriptionEncrypted,
+          amount_encrypted: amountEncrypted,
+          is_encrypted: true,
+          user_id: user.id,
+        },
+      ]);
+
+      if (error) {
+        console.error("Error adding transaction:", error);
+        alert("Failed to add transaction");
+      } else {
+        // Reset form
+        setDescription("");
+        setAmount("");
+        setCategoryId("");
+        setDate(new Date());
+        
+        // Trigger refresh callback
+        onTransactionAdded?.();
+      }
+    } catch (error) {
+      console.error("Encryption error:", error);
+      alert("Failed to encrypt transaction data");
     }
 
     setIsLoading(false);

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { supabase, type Category } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/currency";
+import { decrypt } from "@/lib/encryption";
+import { useAuth } from "@/lib/auth-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
@@ -25,12 +27,15 @@ export function SummaryCards({
   const [totalIncome, setTotalIncome] = useState(0);
   const [topCategory, setTopCategory] = useState<CategoryTotal | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchSummary();
   }, [selectedMonth, refreshTrigger]);
 
   const fetchSummary = async () => {
+    if (!user) return;
+    
     setIsLoading(true);
 
     // Get first and last day of selected month
@@ -63,22 +68,44 @@ export function SummaryCards({
     const categoryTotals: Record<string, CategoryTotal> = {};
 
     transactions?.forEach((transaction: any) => {
-      const amount = parseFloat(transaction.amount);
-      const category = transaction.category;
-
-      if (category.type === "expense") {
-        expenseSum += amount;
-
-        // Track category totals for expenses
-        if (!categoryTotals[category.id]) {
-          categoryTotals[category.id] = {
-            category,
-            total: 0,
-          };
+      try {
+        // ALWAYS read from encrypted fields (with fallback to plaintext for legacy data)
+        let amount: number;
+        
+        // PRIORITY 1: Use encrypted field if available
+        if (transaction.amount_encrypted) {
+          const decryptedAmount = decrypt(transaction.amount_encrypted, user.id);
+          amount = parseFloat(decryptedAmount) || 0;
+        } 
+        // PRIORITY 2: Fallback to plaintext (for unmigrated data)
+        else if (transaction.amount) {
+          console.warn(`Transaction ${transaction.id} not encrypted - using plaintext in summary`);
+          amount = parseFloat(transaction.amount);
         }
-        categoryTotals[category.id].total += amount;
-      } else if (category.type === "income") {
-        incomeSum += amount;
+        // PRIORITY 3: Default to 0
+        else {
+          console.error(`Transaction ${transaction.id} has no amount data`);
+          amount = 0;
+        }
+        
+        const category = transaction.category;
+
+        if (category.type === "expense") {
+          expenseSum += amount;
+
+          // Track category totals for expenses
+          if (!categoryTotals[category.id]) {
+            categoryTotals[category.id] = {
+              category,
+              total: 0,
+            };
+          }
+          categoryTotals[category.id].total += amount;
+        } else if (category.type === "income") {
+          incomeSum += amount;
+        }
+      } catch (error) {
+        console.error("Error processing transaction:", error);
       }
     });
 
