@@ -64,35 +64,40 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
       return;
     }
 
-    if (!user) {
-      alert("You must be logged in to add transactions");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // Encrypt sensitive data before storing
       const amountValue = parseFloat(amount);
-      const amountEncrypted = encrypt(amountValue, user.id);
-      const descriptionEncrypted = encrypt(description || '', user.id);
+      
+      // Build the base transaction object
+      const transactionData: any = {
+        date: format(date, "yyyy-MM-dd"),
+        category_id: categoryId,
+        description: description || null,
+        amount: amountValue,
+      };
 
-      const { error } = await supabase.from("transactions").insert([
-        {
-          date: format(date, "yyyy-MM-dd"),
-          category_id: categoryId,
-          description: description || null, // Keep for backward compatibility
-          amount: amountValue, // Keep for backward compatibility
-          description_encrypted: descriptionEncrypted,
-          amount_encrypted: amountEncrypted,
-          is_encrypted: true,
-          user_id: user.id,
-        },
-      ]);
+      // Add encrypted fields and user_id only if user is authenticated and encryption is available
+      if (user) {
+        try {
+          const amountEncrypted = encrypt(amountValue, user.id);
+          const descriptionEncrypted = encrypt(description || '', user.id);
+          
+          transactionData.description_encrypted = descriptionEncrypted;
+          transactionData.amount_encrypted = amountEncrypted;
+          transactionData.is_encrypted = true;
+          transactionData.user_id = user.id;
+        } catch (encryptError) {
+          console.warn("Encryption not available, storing unencrypted:", encryptError);
+          // Continue without encryption if it fails
+        }
+      }
+
+      const { error } = await supabase.from("transactions").insert([transactionData]);
 
       if (error) {
         console.error("Error adding transaction:", error);
-        alert("Failed to add transaction");
+        alert(`Failed to add transaction: ${error.message || 'Unknown error'}`);
       } else {
         // Reset form
         setDescription("");
@@ -103,9 +108,9 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
         // Trigger refresh callback
         onTransactionAdded?.();
       }
-    } catch (error) {
-      console.error("Encryption error:", error);
-      alert("Failed to encrypt transaction data");
+    } catch (error: any) {
+      console.error("Transaction error:", error);
+      alert(`Failed to add transaction: ${error.message || 'Unknown error'}`);
     }
 
     setIsLoading(false);

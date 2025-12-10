@@ -13,10 +13,12 @@ function getMasterKey(): string {
   const key = process.env.NEXT_PUBLIC_DATA_ENCRYPTION_KEY;
   
   if (!key) {
+    console.warn('⚠️ NEXT_PUBLIC_DATA_ENCRYPTION_KEY not set - encryption disabled');
     throw new Error('DATA_ENCRYPTION_KEY not found in environment variables');
   }
   
   if (key.length < 32) {
+    console.warn('⚠️ NEXT_PUBLIC_DATA_ENCRYPTION_KEY too short - encryption disabled');
     throw new Error('DATA_ENCRYPTION_KEY must be at least 32 characters');
   }
   
