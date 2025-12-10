@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ManageCategoriesDialog } from "@/components/ManageCategoriesDialog";
+import { TransactionTemplatesPopover } from "@/components/TransactionTemplatesPopover";
 import { cn } from "@/lib/utils";
 
 interface TransactionLoggerProps {
@@ -58,9 +59,25 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
     fetchCategories();
   }, []);
 
+  // Handle template selection - auto-fill form
+  const handleSelectTemplate = (template: {
+    categoryId: string;
+    amount: string;
+    description: string;
+  }) => {
+    setCategoryId(template.categoryId);
+    setAmount(template.amount);
+    setDescription(template.description);
+  };
+
   const handleAddTransaction = async () => {
     if (!categoryId || !amount || !date) {
       alert("Please fill in all required fields");
+      return;
+    }
+
+    if (!user) {
+      alert("You must be logged in to add transactions");
       return;
     }
 
@@ -69,35 +86,26 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
     try {
       const amountValue = parseFloat(amount);
       
-      // Build the base transaction object
-      const transactionData: any = {
-        date: format(date, "yyyy-MM-dd"),
-        category_id: categoryId,
-        description: description || null,
-        amount: amountValue,
-      };
-
-      // Add encrypted fields and user_id only if user is authenticated and encryption is available
-      if (user) {
-        try {
-          const amountEncrypted = encrypt(amountValue, user.id);
-          const descriptionEncrypted = encrypt(description || '', user.id);
-          
-          transactionData.description_encrypted = descriptionEncrypted;
-          transactionData.amount_encrypted = amountEncrypted;
-          transactionData.is_encrypted = true;
-          transactionData.user_id = user.id;
-        } catch (encryptError) {
-          console.warn("Encryption not available, storing unencrypted:", encryptError);
-          // Continue without encryption if it fails
-        }
-      }
-
-      const { error } = await supabase.from("transactions").insert([transactionData]);
+      // Encrypt the data - your DB only has encrypted columns now!
+      const amountEncrypted = encrypt(amountValue, user.id);
+      const descriptionEncrypted = encrypt(description || '', user.id);
+      
+      // Insert ONLY encrypted data (no plaintext columns exist)
+      const { error } = await supabase
+        .from("transactions")
+        .insert([{
+          date: format(date, "yyyy-MM-dd"),
+          category_id: categoryId,
+          amount_encrypted: amountEncrypted,
+          description_encrypted: descriptionEncrypted,
+          is_encrypted: true,
+          user_id: user.id,
+        }] as any);
 
       if (error) {
         console.error("Error adding transaction:", error);
-        alert(`Failed to add transaction: ${error.message || 'Unknown error'}`);
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        alert(`Failed to add transaction: ${error.message || 'Unknown error'}\n\n${error.hint || ''}`);
       } else {
         // Reset form
         setDescription("");
@@ -201,6 +209,17 @@ export function TransactionLogger({ onTransactionAdded }: TransactionLoggerProps
           className="w-[140px] ghost-input h-9 border-transparent"
           step="0.01"
           min="0"
+        />
+
+        {/* Templates Button */}
+        <TransactionTemplatesPopover
+          categories={categories}
+          onSelectTemplate={handleSelectTemplate}
+          currentForm={{
+            categoryId,
+            amount,
+            description,
+          }}
         />
 
         {/* Add Button */}

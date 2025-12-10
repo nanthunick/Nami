@@ -29,3 +29,14 @@ export type Transaction = {
   is_encrypted?: boolean;
 };
 
+export type TransactionTemplate = {
+  id: string;
+  created_at: string;
+  user_id: string;
+  name: string;
+  category_id: string;
+  amount_encrypted: string;
+  description_encrypted: string;
+  is_encrypted: boolean;
+};
+
