@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Banknote, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { TransactionLogger } from "@/components/TransactionLogger";
 import { SummaryCards } from "@/components/SummaryCards";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { MonthSelector } from "@/components/MonthSelector";
+import { NamiIcon } from "@/components/NamiIcon";
 
 export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
@@ -35,22 +36,22 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <motion.div
-                className="flex items-center gap-3"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                <Banknote className="h-9 w-9 text-foreground" strokeWidth={1.5} />
-                <h1 className="text-4xl font-semibold tracking-tight">
+              <div className="flex items-center gap-3">
+                <NamiIcon />
+                <motion.h1
+                  className="text-4xl font-semibold tracking-tight"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut", delay: 0.3 }}
+                >
                   Nami
-          </h1>
-              </motion.div>
+                </motion.h1>
+              </div>
               <motion.p
-                className="text-muted-foreground text-sm mt-2"
+                className="text-muted-foreground text-sm mt-2 ml-12"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
               >
                 Personal Finance Dashboard
               </motion.p>
