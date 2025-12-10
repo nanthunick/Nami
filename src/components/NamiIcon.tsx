@@ -10,108 +10,74 @@ export function NamiIcon() {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full"
-        initial={{ opacity: 0, scale: 0.8 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         {/* Money bag rope/tie */}
         <motion.path
-          d="M 35 25 Q 35 15 40 10 Q 50 5 60 10 Q 65 15 65 25"
-          stroke="#10b981"
-          strokeWidth="3"
+          d="M 32 28 Q 32 18 38 12 Q 50 6 62 12 Q 68 18 68 28"
+          stroke="currentColor"
+          strokeWidth="4"
           fill="none"
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          strokeLinejoin="round"
+          className="text-foreground"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
         />
         
-        {/* Money bag body with gradient */}
+        {/* Money bag body */}
         <motion.g
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
         >
-          <defs>
-            <linearGradient id="bagGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#059669" stopOpacity="1" />
-            </linearGradient>
-          </defs>
-          
-          {/* Main bag shape */}
+          {/* Main bag shape - clean and solid */}
           <motion.path
-            d="M 30 25 Q 20 35 15 50 Q 10 70 20 85 Q 30 100 50 105 Q 70 100 80 85 Q 90 70 85 50 Q 80 35 70 25 Z"
-            fill="url(#bagGradient)"
+            d="M 28 28 Q 18 38 14 52 Q 10 68 18 84 Q 28 98 50 104 Q 72 98 82 84 Q 90 68 86 52 Q 82 38 72 28 Z"
+            fill="currentColor"
+            className="text-foreground"
             animate={{
               d: [
-                "M 30 25 Q 20 35 15 50 Q 10 70 20 85 Q 30 100 50 105 Q 70 100 80 85 Q 90 70 85 50 Q 80 35 70 25 Z",
-                "M 30 25 Q 20 35 15 52 Q 10 70 20 86 Q 30 100 50 106 Q 70 100 80 86 Q 90 70 85 52 Q 80 35 70 25 Z",
-                "M 30 25 Q 20 35 15 50 Q 10 70 20 85 Q 30 100 50 105 Q 70 100 80 85 Q 90 70 85 50 Q 80 35 70 25 Z",
+                "M 28 28 Q 18 38 14 52 Q 10 68 18 84 Q 28 98 50 104 Q 72 98 82 84 Q 90 68 86 52 Q 82 38 72 28 Z",
+                "M 28 28 Q 18 38 14 54 Q 10 68 18 85 Q 28 98 50 105 Q 72 98 82 85 Q 90 68 86 54 Q 82 38 72 28 Z",
+                "M 28 28 Q 18 38 14 52 Q 10 68 18 84 Q 28 98 50 104 Q 72 98 82 84 Q 90 68 86 52 Q 82 38 72 28 Z",
               ],
             }}
             transition={{
-              duration: 3,
+              duration: 4,
               repeat: Infinity,
               ease: "easeInOut",
             }}
           />
         </motion.g>
 
-        {/* Dollar sign */}
+        {/* Dollar sign - crisp and clean */}
         <motion.g
-          initial={{ opacity: 0, scale: 0 }}
+          initial={{ opacity: 0, scale: 0.7 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.6, ease: "backOut" }}
+          transition={{ duration: 0.4, delay: 0.4, ease: "backOut" }}
         >
-          {/* Dollar $ symbol */}
+          {/* Vertical line of $ */}
           <path
-            d="M 50 45 L 50 75"
-            stroke="#065f46"
-            strokeWidth="4"
+            d="M 50 48 L 50 76"
+            stroke="white"
+            strokeWidth="5"
             strokeLinecap="round"
           />
+          {/* S curve of $ */}
           <path
-            d="M 45 50 Q 45 47 48 46 Q 52 45 55 47 Q 58 49 58 52 Q 58 55 55 57 L 45 61 Q 42 63 42 66 Q 42 69 45 71 Q 48 73 52 73 Q 55 73 57 71"
-            stroke="#065f46"
-            strokeWidth="3.5"
+            d="M 43 54 Q 43 51 46 50 Q 50 48 54 50 Q 58 52 58 55 Q 58 58 54 60 L 46 64 Q 42 66 42 70 Q 42 73 46 75 Q 50 77 54 75 Q 57 73 57 70"
+            stroke="white"
+            strokeWidth="4.5"
             fill="none"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </motion.g>
-
-        {/* Subtle shine effect */}
-        <motion.ellipse
-          cx="35"
-          cy="50"
-          rx="8"
-          ry="15"
-          fill="white"
-          opacity="0.15"
-          animate={{
-            opacity: [0.15, 0.25, 0.15],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
       </motion.svg>
-
-      {/* Subtle glow effect */}
-      <motion.div
-        className="absolute inset-0 rounded-full bg-emerald-500/10 blur-md"
-        animate={{ 
-          opacity: [0.2, 0.4, 0.2],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
     </div>
   );
 }
