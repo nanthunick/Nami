@@ -33,7 +33,11 @@ export function TransactionTemplatesPopover({
   onSelectTemplate,
   currentForm,
 }: TransactionTemplatesPopoverProps) {
-  const [templates, setTemplates] = useState<(TransactionTemplate & { category?: Category })[]>([]);
+  const [templates, setTemplates] = useState<(TransactionTemplate & { 
+    category?: Category;
+    amount: string;
+    description: string;
+  })[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [showSaveForm, setShowSaveForm] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -57,23 +61,25 @@ export function TransactionTemplatesPopover({
     }
 
     // Decrypt and enrich with category data
-    const enrichedTemplates = (data || []).map((template) => {
-      try {
-        const amount = decrypt(template.amount_encrypted, user.id);
-        const description = decrypt(template.description_encrypted || "", user.id);
-        const category = categories.find((c) => c.id === template.category_id);
+    const enrichedTemplates = (data || [])
+      .map((template) => {
+        try {
+          const amount = decrypt(template.amount_encrypted, user.id);
+          const description = decrypt(template.description_encrypted || "", user.id);
+          const category = categories.find((c) => c.id === template.category_id);
 
-        return {
-          ...template,
-          amount,
-          description,
-          category,
-        };
-      } catch (error) {
-        console.error("Error decrypting template:", error);
-        return null;
-      }
-    }).filter(Boolean) as any;
+          return {
+            ...template,
+            amount,
+            description,
+            category,
+          };
+        } catch (error) {
+          console.error("Error decrypting template:", error);
+          return null;
+        }
+      })
+      .filter((t): t is NonNullable<typeof t> => t !== null);
 
     setTemplates(enrichedTemplates);
   };
