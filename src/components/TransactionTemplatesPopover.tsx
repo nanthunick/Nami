@@ -51,7 +51,8 @@ export function TransactionTemplatesPopover({
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching templates:", error);
+      console.warn("Templates table not available yet:", error.message);
+      // Silently fail - table might not exist yet
       return;
     }
 
@@ -109,11 +110,12 @@ export function TransactionTemplatesPopover({
           description_encrypted: descriptionEncrypted,
           is_encrypted: true,
         },
-      ]);
+      ] as any);
 
       if (error) {
         console.error("Error saving template:", error);
-        alert("Failed to save template");
+        console.error("Error details:", JSON.stringify(error, null, 2));
+        alert(`Failed to save template: ${error.message || 'Unknown error'}\n\nMake sure you've run the database migration (012_transaction_templates.sql)`);
       } else {
         setTemplateName("");
         setShowSaveForm(false);
